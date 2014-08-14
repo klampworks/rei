@@ -1,0 +1,169 @@
+#!/bin/busybox sh
+check_mounted() 
+{
+	if ! mount | grep $1 > /dev/null; then
+		echo "WARNING: $1 does not appear to be mounted."
+	fi
+}
+
+load_keymap()
+{
+	if [[ ! -d /dev/vc ]]; then
+		mkdir /dev/vc
+	fi
+	  
+	if [[ ! -f /dev/vc/0 ]]; then
+		ln -s /dev/console /dev/vc/0
+	fi
+
+	if [[ ! -f /etc/keymap ]]; then
+		echo "Place keymap in /etc/keymap and rebuild."
+	fi
+
+	loadkmap < /etc/keymap
+}
+
+find_mnt()
+{
+	blkid | sed -n "/$1/s/\([^:]\+\).*/\1/p"
+}
+
+mount_this()
+{
+	mkdir -p $2
+	mount $3 $1 $2 &> /dev/null
+	sleep 1
+}
+
+prepare_sqfs()
+{
+	#$1 UUID
+	#$2 squashfs filename
+	#
+	#sqfs file will be copied into ram at /$1
+	#
+
+	root=$(find_mnt $1)
+	mount_this $root $1
+	echo "Copying $2..."
+	cp "$1/$2" $2
+	echo "Done!"
+	umount $1
+	mount_this $2 $1
+}
+
+prepare_tmpfs()
+{
+	#$1 mount point/
+	mount_this "none" $1 "-t tmpfs"
+}
+
+union_mount()
+{
+	#$1 UUID of media containing sqfs file.
+	#$2 filepath of sqfs file relative to mount point.
+	#$3 tmpfs name
+	#$4 mount point
+
+	prepare_sqfs $1 $2
+	prepare_tmpfs $3
+	/bin/unionfs -o dirs=$3=rw:$1=ro $4
+}
+
+union_mount_vm()
+{
+	#$1 Mounted sqfs path.
+	#$2 tmpfs name
+	#$3 mount point
+
+	prepare_tmpfs $2
+	/bin/unionfs -o dirs=$2=rw:$1=ro $3
+}
+
+#Disable kernel messages from popping onto the screen
+echo 0 > /proc/sys/kernel/printk
+
+#Wait for kernel messages to subside.
+sleep 2
+
+clear
+
+#Create all the symlinks to /bin/busybox
+/bin/busybox --install -s
+
+mount -t proc none /proc
+mount -t sysfs none /sys
+
+check_mounted /proc
+check_mounted /sys
+
+#Create device nodes
+mknod /dev/tty c 5 0
+mdev -s
+
+load_keymap
+#exec sh
+
+echo "hello world"
+
+#root=$(find_mnt "1aa7420e-2897-4cc5-b43a-15ec79976b7c")
+#mount_this $root "/mnt"
+#mount_this /mnt/test.sqfs "/mnt2"
+
+#union_mount "1aa7420e-2897-4cc5-b43a-15ec79976b7c" "test.sqfs" "tmpfs" "/mnt"
+#cp "/dev/sr0" "/ttt"
+mount_this "/dev/sr0" "/sqfs" "-t squashfs"
+#union_mount_vm "/sqfs" "tmpfs" "/mnt"
+#
+#mount_this "/dev/sr0" "/sqfs" "-t squashfs"
+mount_this "none" "/tmpfs" "-t tmpfs"
+
+#Copy on write is important. This is the correct order,
+/bin/unionfs -o cow,allow_other,dirs=/tmpfs=rw:/sqfs=ro /mnt
+
+umount /sys /proc
+echo "Switching root..."
+
+mkdir -p /mnt/run/ /mnt/dev/ /mnt/sys /mnt/proc /mnt/var/log/
+mount -t devtmpfs none /mnt/dev
+
+exec switch_root /mnt /sbin/init
+#exec switch_root /mnt /bin/sh
+
+#/bin/bash
+#prepare_sqfs "1aa7420e-2897-4cc5-b43a-15ec79976b7c" "test.sqfs"
+#prepare_tmpfs "tmpfs"
+echo "failed"
+exec sh
+
+#Defaults
+init="/sbin/init"
+#root="/dev/vg/root"
+#enc_root=/dev/sda1
+
+sleep 2
+mdev -s
+sleep 2
+
+root=$(blkid | sed -n "/uuid/s/\(\/dev\/sd[a-z][0-9]\).*/\1/p")
+
+cryptsetup luksOpen "${root}" root
+#lvmdiskscan
+
+#lvm vgchange -a y
+
+mount /dev/mapper/root /newroot
+
+#Unmount all other mounts so that the ram used by
+#the initramfs can be cleared after switch_root
+umount /sys /proc
+
+#Switch to the new root and execute init
+if [[ -x "/newroot/${init}" ]] ; then
+	exec switch_root /newroot "${init}"
+fi
+
+#This will only be run if the above line failed
+echo "Failed to switch_root, dropping to a shell"
+exec sh
+
