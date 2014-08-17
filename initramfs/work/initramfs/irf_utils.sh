@@ -87,3 +87,27 @@ union_mount_vm()
 	prepare_tmpfs $2
 	/bin/unionfs -o dirs=$2=rw:$1=ro $3
 }
+
+basic_setup()
+{
+	#Disable kernel messages from popping onto the screen
+	echo 0 > /proc/sys/kernel/printk
+
+	#Wait for kernel messages to subside.
+	sleep 2
+	clear
+
+
+	/bin/busybox --install -s
+	mount -t proc none /proc
+	mount -t sysfs none /sys
+
+	check_mounted /proc
+	check_mounted /sys
+
+	#Create device nodes
+	mknod /dev/tty c 5 0
+	mdev -s
+
+	load_keymap
+}

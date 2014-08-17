@@ -1,32 +1,6 @@
 #!/bin/busybox sh
-
-#Disable kernel messages from popping onto the screen
-echo 0 > /proc/sys/kernel/printk
-
-#Wait for kernel messages to subside.
-sleep 2
-
-clear
-
-#Create all the symlinks to /bin/busybox
-/bin/busybox --install -s
-
 . "/irf_utils.sh"
-
-mount -t proc none /proc
-mount -t sysfs none /sys
-
-check_mounted /proc
-check_mounted /sys
-
-#Create device nodes
-mknod /dev/tty c 5 0
-mdev -s
-
-load_keymap
-#exec sh
-
-echo "hello world"
+basic_setup
 
 #root=$(find_mnt "1aa7420e-2897-4cc5-b43a-15ec79976b7c")
 #mount_this $root "/mnt"
