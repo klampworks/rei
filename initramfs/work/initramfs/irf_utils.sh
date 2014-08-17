@@ -32,6 +32,14 @@ load_keymap()
 # f81d4fae-7dec-11d0-a765-00a0c91e6bf6 --> /dev/sdb3
 find_mnt()
 {
+	#TODO, embed a Perl interpreter and fuck this sed bullshit
+	res=$(echo $1 | sed -n '{s/\([0-9a-f]\{8\}-[0-9a-f]\{4\}\-[0-9a-f]\{4\}\-[0-9a-f]\{4\}-[0-9a-f]\{12\}\)/\1/p}')
+
+	if [ -z "$res" ]
+	then
+		return
+	fi
+
 	blkid | sed -n "/$1/s/\([^:]\+\).*/\1/p"
 }
 
