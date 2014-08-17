@@ -15,7 +15,8 @@ mount_this "/dev/sr0" "/sqfs" "-t squashfs"
 mount_this "none" "/tmpfs" "-t tmpfs"
 
 #Copy on write is important. This is the correct order,
-/bin/unionfs -o cow,allow_other,dirs=/tmpfs=rw:/sqfs=ro /mnt
+#/bin/unionfs -o cow,allow_other,dirs=/tmpfs=rw:/sqfs=ro /mnt
+union /tmpfs /sqfs /mnt
 
 umount /sys /proc
 echo "Switching root..."

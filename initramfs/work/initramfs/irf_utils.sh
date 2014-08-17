@@ -111,3 +111,14 @@ basic_setup()
 
 	load_keymap
 }
+
+#$1 rw branch
+#$2 ro branch
+#$3 mount point
+union()
+{
+	#Copy on write is mandatory when there is a read only branch.
+	#Allow other is needed for non-root file access.
+	#rw branch must be "on top", otherwise changes do not propagate.
+	/bin/unionfs -o cow,allow_other,dirs=/tmpfs=rw:/sqfs=ro /mnt
+}
