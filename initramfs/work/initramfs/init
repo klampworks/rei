@@ -18,14 +18,7 @@ mount_this "none" "/tmpfs" "-t tmpfs"
 #/bin/unionfs -o cow,allow_other,dirs=/tmpfs=rw:/sqfs=ro /mnt
 union /tmpfs /sqfs /mnt
 
-umount /sys /proc
-echo "Switching root..."
-
-mkdir -p /mnt/run/ /mnt/dev/ /mnt/sys /mnt/proc /mnt/var/log/
-mount -t devtmpfs none /mnt/dev
-
-exec switch_root /mnt /sbin/init
-#exec switch_root /mnt /bin/sh
+switch /mnt #/bin/sh
 
 #/bin/bash
 #prepare_sqfs "1aa7420e-2897-4cc5-b43a-15ec79976b7c" "test.sqfs"

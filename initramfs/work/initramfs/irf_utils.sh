@@ -122,3 +122,25 @@ union()
 	#rw branch must be "on top", otherwise changes do not propagate.
 	/bin/unionfs -o cow,allow_other,dirs=/tmpfs=rw:/sqfs=ro /mnt
 }
+
+#$1 mount point
+#$2 init (optional).
+switch()
+{
+	if [ -z "$2" ]
+	then
+		init=/sbin/init
+	else
+		init=$2
+	fi
+
+	echo "Switching root..."
+
+	#System will be inoperable without these directories, best make sure.
+	mkdir -p /mnt/run/ /mnt/dev/ /mnt/sys /mnt/proc /mnt/var/log/
+	mount -t devtmpfs none /mnt/dev
+
+	umount /sys /proc
+	exec switch_root $1 $init
+}
+
