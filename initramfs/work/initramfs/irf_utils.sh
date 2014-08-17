@@ -141,6 +141,14 @@ switch()
 	mount -t devtmpfs none /mnt/dev
 
 	umount /sys /proc
-	exec switch_root $1 $init
+
+	#Switch to the new root and execute init
+	if [[ -x "${1}/${init}" ]] ; then
+		exec switch_root "${1}" "${init}"
+	fi
+
+	#This will only be run if the above line failed
+	echo "Failed to switch_root, dropping to a shell"
+	exec sh
 }
 

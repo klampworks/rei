@@ -44,16 +44,3 @@ cryptsetup luksOpen "${root}" root
 
 mount /dev/mapper/root /newroot
 
-#Unmount all other mounts so that the ram used by
-#the initramfs can be cleared after switch_root
-umount /sys /proc
-
-#Switch to the new root and execute init
-if [[ -x "/newroot/${init}" ]] ; then
-	exec switch_root /newroot "${init}"
-fi
-
-#This will only be run if the above line failed
-echo "Failed to switch_root, dropping to a shell"
-exec sh
-
