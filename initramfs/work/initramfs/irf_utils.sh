@@ -155,8 +155,24 @@ switch()
 		exec switch_root "${1}" "${init}"
 	fi
 
+	basic_setup
 	#This will only be run if the above line failed
 	echo "Failed to switch_root, dropping to a shell"
 	exec sh
 }
 
+#$1 uuid of disk
+one_time_swap()
+{
+	disk=$(find_mnt $1)
+
+	if [ -z "$disk" ]
+	then
+		echo "Could not find disk $1, no swap created."
+		return
+	fi
+
+	cryptsetup create -d /dev/urandom -s 256 swap $disk
+	mkswap /dev/mapper/swap
+	swapon /dev/mapper/swap
+}
