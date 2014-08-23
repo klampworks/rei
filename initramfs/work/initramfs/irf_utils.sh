@@ -172,7 +172,14 @@ one_time_swap()
 		return
 	fi
 
-	cryptsetup create -d /dev/urandom -s 256 swap $disk
+	dd if=/dev/urandom of=/key bs=1 count=32
+	cryptsetup luksFormat $disk --use-urandom --batch-mode -d \
+		/key --uuid $1
+
+	cryptsetup luksOpen $disk swap -d /key
+
+	dd if=/dev/urandom of=/key bs=1 count=32
+
 	mkswap /dev/mapper/swap
 	swapon /dev/mapper/swap
 }
