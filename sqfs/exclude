@@ -1,0 +1,8 @@
+sys/
+proc/
+run/
+var/log/
+var/tmp/
+usr/portage/
+usr/src/
+dev/
