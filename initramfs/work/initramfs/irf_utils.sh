@@ -188,3 +188,17 @@ get_opt()
 {
 	echo "$@" | cut -d "=" -f 2
 }
+
+parse_argv()
+{
+	for i in $(cat /proc/cmdline); do
+		case $i in
+			profile\=*)
+				profile=$(get_opt $i)
+				;;
+			swap\=*)
+				swap=$(get_opt $i)
+				;;
+		esac
+	done
+}
