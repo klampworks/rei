@@ -42,13 +42,13 @@ iptables -A OUTPUT -p tcp -j ACCEPT -o lo
 iptables -A OUTPUT -p tcp -j ACCEPT -o $interface -m owner --uid-owner $tor_user
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
-####################################sfhsdjfsdjh
-iptables -I INPUT -p tcp --dport 22 -s 192.168.100.0/16 -j ACCEPT
-iptables -I OUTPUT -p tcp --sport 22 -d 192.168.100.0/16 -j ACCEPT
+. /etc/local.d/allow_ssh.sh
 
 ################################################################################
 ##############################  Profile Specific  ##############################
 ################################################################################
+
+/etc/init.d/tor start
 
 #Bookmarks
 ffbase=/home/rei/.mozilla/torbrowser/
