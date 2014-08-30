@@ -183,3 +183,8 @@ one_time_swap()
 	mkswap /dev/mapper/swap
 	swapon /dev/mapper/swap
 }
+
+get_opt() 
+{
+	echo "$@" | cut -d "=" -f 2
+}
