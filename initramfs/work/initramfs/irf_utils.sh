@@ -202,3 +202,34 @@ parse_argv()
 		esac
 	done
 }
+
+cp_mod()
+{
+	dest="/mnt/etc/local.d"
+
+	for ARG in "$@"
+	do
+		cp "/profiles/modules/$ARG" "$dest"
+	done
+}
+
+load_profile()
+{
+		case $profile in
+			tbb)
+				rm -rf /mnt/etc/local.d/*
+				cp /profiles/tbb/* /mnt/etc/local.d/
+				cp_mod 	mount_9p.sh \
+					deny_all.sh \
+					allow_lo.sh \
+					allow_tor.sh \
+					allow_ssh.sh
+
+				chmod +x /mnt/etc/local.d/*
+				;;
+			*)
+				echo "Unknown profile <$profile>."
+				exec sh	
+				;;
+		esac
+}

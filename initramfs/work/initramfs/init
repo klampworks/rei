@@ -2,15 +2,18 @@
 . "/irf_utils.sh"
 basic_setup
 
-one_time_swap "1aa7420e-2897-4cc5-b43a-15ec79976b7c"
+parse_argv
+
+if [ "$swap" -ne 0 ]
+then
+	one_time_swap "1aa7420e-2897-4cc5-b43a-15ec79976b7c"
+fi
 
 mount_this "/dev/sr0" "/sqfs" "-t squashfs"
 mount_this "none" "/tmpfs" "-t tmpfs"
 union /tmpfs /sqfs /mnt
 
-rm /mnt/etc/local.d/*
-cp /profiles/tbb/tbb.start /mnt/etc/local.d/
-chmod +x /mnt/etc/local.d/tbb.start
+load_profile
 
 switch /mnt #/bin/sh
 
