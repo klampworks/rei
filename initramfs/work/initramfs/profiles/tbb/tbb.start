@@ -1,0 +1,65 @@
+#!/bin/bash
+
+################################################################################
+############################## Network filesystem ##############################
+################################################################################
+mount -t 9p -o trans=virtio,noexec share /share
+
+################################################################################
+##############################       Firewall     ##############################
+################################################################################
+#Tor's listening port.
+tor_port="9050"
+
+#This will likely be debian-tor by default if 
+#you're using a Debian based distro.
+tor_user="tor"
+
+#Network interface to allow.
+interface="enp0s3"
+
+#The user to allow access to tor i.e. the user your web browser runs under.
+user_user="rei"
+
+iptables -F
+iptables -P INPUT ACCEPT
+iptables -P FORWARD ACCEPT
+iptables -P OUTPUT ACCEPT
+
+iptables -P INPUT DROP
+iptables -P OUTPUT DROP
+
+iptables -I INPUT -j ACCEPT -i lo -p tcp --dport $tor_port --sport 1:65000
+iptables -A OUTPUT -j ACCEPT -o lo -p tcp --dport 1:65000 --sport $tor_port
+
+iptables -A OUTPUT -p tcp -j ACCEPT -m owner --uid-owner $tor_user -o lo
+iptables -A OUTPUT -p tcp -j ACCEPT -m owner --uid-owner $user_user -o lo
+
+# TODO I can't get fucking xpra to work without allowing all traffic on lo...
+iptables -A INPUT -p tcp -j ACCEPT -i lo
+iptables -A OUTPUT -p tcp -j ACCEPT -o lo
+
+iptables -A OUTPUT -p tcp -j ACCEPT -o $interface -m owner --uid-owner $tor_user
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+####################################sfhsdjfsdjh
+iptables -I INPUT -p tcp --dport 22 -s 192.168.100.0/16 -j ACCEPT
+iptables -I OUTPUT -p tcp --sport 22 -d 192.168.100.0/16 -j ACCEPT
+
+################################################################################
+##############################  Profile Specific  ##############################
+################################################################################
+
+#Bookmarks
+ffbase=/home/rei/.mozilla/torbrowser/
+ffprofile=$(grep Path $ffbase/profiles.ini | head -1 | cut -d = -f2)
+rm $ffbase/$ffprofile/places.sqlite
+
+#Lazy way of ensuring it has the right permissions.
+/bin/su - -- rei -c "ln -s /share/places.sqlite $ffbase/$ffprofile/"
+
+/bin/su - -- rei -c '/usr/bin/xpra start :7 &> /dev/null &' 
+sleep 2
+/bin/su - -- rei -c 'DISPLAY=:7 /usr/bin/torbrowser &> /dev/null &' 
+
+chmod 777 /home/rei/.xpra/localhost-7

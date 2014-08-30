@@ -2,27 +2,18 @@
 . "/irf_utils.sh"
 basic_setup
 
-#root=$(find_mnt "1aa7420e-2897-4cc5-b43a-15ec79976b7c")
-#mount_this $root "/mnt"
-#mount_this /mnt/test.sqfs "/mnt2"
+one_time_swap "1aa7420e-2897-4cc5-b43a-15ec79976b7c"
 
-#union_mount "1aa7420e-2897-4cc5-b43a-15ec79976b7c" "test.sqfs" "tmpfs" "/mnt"
-#cp "/dev/sr0" "/ttt"
 mount_this "/dev/sr0" "/sqfs" "-t squashfs"
-#union_mount_vm "/sqfs" "tmpfs" "/mnt"
-#
-#mount_this "/dev/sr0" "/sqfs" "-t squashfs"
 mount_this "none" "/tmpfs" "-t tmpfs"
-
-#Copy on write is important. This is the correct order,
-#/bin/unionfs -o cow,allow_other,dirs=/tmpfs=rw:/sqfs=ro /mnt
 union /tmpfs /sqfs /mnt
+
+rm /mnt/etc/local.d/*
+cp /profiles/tbb/tbb.start /mnt/etc/local.d/
+chmod +x /mnt/etc/local.d/tbb.start
 
 switch /mnt #/bin/sh
 
-#/bin/bash
-#prepare_sqfs "1aa7420e-2897-4cc5-b43a-15ec79976b7c" "test.sqfs"
-#prepare_tmpfs "tmpfs"
 echo "failed"
 exec sh
 
@@ -44,3 +35,12 @@ cryptsetup luksOpen "${root}" root
 
 mount /dev/mapper/root /newroot
 
+#root=$(find_mnt "1aa7420e-2897-4cc5-b43a-15ec79976b7c")
+#mount_this $root "/mnt"
+#mount_this /mnt/test.sqfs "/mnt2"
+
+#union_mount "1aa7420e-2897-4cc5-b43a-15ec79976b7c" "test.sqfs" "tmpfs" "/mnt"
+#cp "/dev/sr0" "/ttt"
+#union_mount_vm "/sqfs" "tmpfs" "/mnt"
+#
+#mount_this "/dev/sr0" "/sqfs" "-t squashfs"
