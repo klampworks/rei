@@ -9,15 +9,8 @@ mount -t 9p -o trans=virtio,noexec share /share
 ##############################       Firewall     ##############################
 ################################################################################
 
-user_user="rei"
-
 . /etc/local.d/deny_all.sh
-
-iptables -A OUTPUT -p tcp -j ACCEPT -m owner --uid-owner $user_user -o lo
-
-# TODO I can't get fucking xpra to work without allowing all traffic on lo...
-iptables -A INPUT -p tcp -j ACCEPT -i lo
-iptables -A OUTPUT -p tcp -j ACCEPT -o lo
+. /etc/local.d/allow_lo.sh
 
 . /etc/local.d/allow_tor.sh
 . /etc/local.d/allow_ssh.sh
