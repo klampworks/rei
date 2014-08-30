@@ -11,13 +11,7 @@ mount -t 9p -o trans=virtio,noexec share /share
 
 user_user="rei"
 
-iptables -F
-iptables -P INPUT ACCEPT
-iptables -P FORWARD ACCEPT
-iptables -P OUTPUT ACCEPT
-
-iptables -P INPUT DROP
-iptables -P OUTPUT DROP
+. /etc/local.d/deny_all.sh
 
 iptables -A OUTPUT -p tcp -j ACCEPT -m owner --uid-owner $user_user -o lo
 
