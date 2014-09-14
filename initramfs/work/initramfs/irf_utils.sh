@@ -213,6 +213,16 @@ cp_mod()
 	done
 }
 
+prof_skype()
+{
+	rm -rf /mnt/etc/local.d/*
+	cp /profiles/skype/* /mnt/etc/local.d/
+	cp_mod 	mount_9p.sh \
+		allow_dns.sh
+
+	chmod +x /mnt/etc/local.d/*
+}
+
 load_profile()
 {
 		case $profile in
@@ -237,6 +247,9 @@ load_profile()
 					allow_ssh.sh
 
 				chmod +x /mnt/etc/local.d/*
+				;;
+			skype)
+				prof_skype
 			;;
 			*)
 				echo "Unknown profile <$profile>."
