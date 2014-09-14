@@ -39,6 +39,7 @@ rm $ffbase/$ffprofile/places.sqlite
 #Lazy way of ensuring it has the right permissions.
 /bin/su - -- rei -c "ln -s /share/places.sqlite $ffbase/$ffprofile/"
 
-/bin/su - -- rei -c '/usr/bin/xpra start :7 &> /dev/null &' 
+/bin/su - -- rei -c '/usr/bin/xpra start :77 &> /dev/null &' 
 sleep 2
-/bin/su - -- rei -c 'DISPLAY=:7 /usr/bin/torbrowser &> /dev/null &' 
+/bin/su - -- rei -c 'DISPLAY=:77 /usr/bin/torbrowser &'
+#&> /dev/null &' 
