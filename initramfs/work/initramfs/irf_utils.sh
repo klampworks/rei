@@ -209,7 +209,7 @@ cp_mod()
 
 	for ARG in "$@"
 	do
-		cp "/profiles/modules/$ARG" "$dest"
+		cp "/profiles/common/$ARG" "$dest"
 	done
 }
 
