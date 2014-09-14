@@ -1,0 +1,48 @@
+#!/bin/sh
+
+################################################################################
+##################################### Uses #####################################
+################################################################################
+
+#mount_9p.sh
+#deny_all.sh
+#allow_lo.sh
+#allow_ssh.sh
+#allow_dns.sh
+
+################################################################################
+############################## Network filesystem ##############################
+################################################################################
+. /etc/local.d/mount_9p.sh
+
+################################################################################
+##############################       Firewall     ##############################
+################################################################################
+
+#TODO Fix the base image.
+. /etc/local.d/deny_all.sh
+. /etc/local.d/allow_lo.sh
+. /etc/local.d/allow_ssh.sh
+
+interface="enp0s3"
+iptables -A OUTPUT -p tcp -j ACCEPT -o $interface -m owner --uid-owner rei --dport 6697
+
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
+. /etc/local.d/allow_dns.sh
+
+################################################################################
+##############################  Profile Specific  ##############################
+################################################################################
+
+rm -rf /home/rei/.config/hexchat/
+rm -rf /home/rei/.config/enchant/
+
+/bin/su - -- rei -c "mkdir -p /home/rei/.config/"
+
+/bin/su - -- rei -c "ln -s /share/hexchat /home/rei/.config/"
+/bin/su - -- rei -c "ln -s /share/enchant /home/rei/.config/"
+
+/bin/su - -- rei -c '/usr/bin/xpra start :7 &> /dev/null &' 
+sleep 2
+/bin/su - -- rei -c 'DISPLAY=:7 /usr/bin/hexchat &> /dev/null &' 

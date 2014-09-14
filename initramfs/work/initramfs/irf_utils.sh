@@ -227,6 +227,17 @@ load_profile()
 
 				chmod +x /mnt/etc/local.d/*
 				;;
+			irc-freenode)
+				rm -rf /mnt/etc/local.d/*
+				cp /profiles/irc/* /mnt/etc/local.d/
+				cp_mod 	mount_9p.sh \
+					deny_all.sh \
+					allow_lo.sh \
+					allow_dns.sh \
+					allow_ssh.sh
+
+				chmod +x /mnt/etc/local.d/*
+			;;
 			*)
 				echo "Unknown profile <$profile>."
 				exec sh	
